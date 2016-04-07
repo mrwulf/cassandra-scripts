@@ -5,7 +5,15 @@ OPTIND=1;
 HOST="";
 
 function help() {
-  echo "$0 [-h|--host HOST] [-v|--verbose] [-1|--one] [--help]";
+  cat << USAGE
+Usage: $0
+       -h | --host HOST   The host to check
+       -v | --verbose     Show text
+       -1 | --one         One and done - don't wait
+       --help             This message
+
+USAGE
+  exit 1;
 }
 
 while [[ $# > 0 ]]; do
@@ -24,7 +32,6 @@ while [[ $# > 0 ]]; do
       ;;
     --help)
       help;
-      exit 0;
       ;;
   esac
 done

@@ -13,12 +13,17 @@ BO=`echo -ne '\033[1m'`
 CS=`echo -ne '\033[0m'`
 
 function help() {
+  PROG=$(basename $0);
   cat << USAGE
-Usage: $0 
+Usage: $PROG
        <command>         Commands to pass to nodetool
        -i | --intro      Don't introduce each node
        -v | --verbose    Add some text
        --help            This screen
+
+Examples:
+    $PROG compactionstats -H
+    $PROG | xargs -I {} ssh {} uptime
 USAGE
   exit 1;
 }
@@ -35,6 +40,11 @@ while [[ $# > 0 ]]; do
     ;;  
   --help)
     help;
+    ;;
+  --)
+    shift;
+    COMMAND="${COMMAND} $@";
+    break;
     ;;
   *)
     COMMAND="${COMMAND} $1";

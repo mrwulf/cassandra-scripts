@@ -1,0 +1,14 @@
+{
+  "uploadOnSave": true,
+  "useAtomicWrites": false,
+  "deleteLocal": false,
+  "hostname": "mw-01.lv.ntent.com",
+  "target": "scripts",
+  "ignore": [
+    ".remote-sync.json",
+    ".git/**"
+  ],
+  "username": "bwulf",
+  "useAgent": true,
+  "transport": "scp"
+}

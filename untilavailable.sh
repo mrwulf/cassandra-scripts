@@ -5,7 +5,7 @@ OPTIND=1;
 HOST="";
 
 function help() {
-  cat << USAGE
+  cat <<USAGE
 Usage: $0
        -h | --host HOST   The host to check
        -v | --verbose     Show text
@@ -36,10 +36,10 @@ while [[ $# > 0 ]]; do
   esac
 done
 
-until STAT=`nodetool $HOST statusbinary 2>&1` && [ "$STAT"  == "running" ]; do 
-  [[ $VERBOSE ]] && echo "Not Available..."; 
+until STAT=`nodetool $HOST statusbinary 2>&1` && [ "$STAT"  == "running" ]; do
+  [[ $VERBOSE ]] && echo "Not Available...";
   [[ $ONEONLY ]] && exit 1;
-  sleep 2; 
+  sleep 2;
 done
 
 [[ $VERBOSE ]] && echo "Available!";

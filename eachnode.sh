@@ -14,7 +14,7 @@ CS=`echo -ne '\033[0m'`
 
 function help() {
   PROG=$(basename $0);
-  cat << USAGE
+  cat <<USAGE
 Usage: $PROG
        <command>         Commands to pass to nodetool
        -i | --intro      Don't introduce each node
@@ -37,7 +37,7 @@ while [[ $# > 0 ]]; do
   -v|--verbose)
     VERBOSE=true;
     shift;
-    ;;  
+    ;;
   --help)
     help;
     ;;
@@ -49,7 +49,7 @@ while [[ $# > 0 ]]; do
   *)
     COMMAND="${COMMAND} $1";
     shift;
-    ;;  
+    ;;
   esac
 done
 
@@ -74,7 +74,7 @@ for NODE in "${SORTEDNODES[@]}"; do
     if [[ $COMMAND ]]; then
       [[ $INTRO ]] && echo -e "${CG}Node: ${NODE} ${CS}";
 
-      nodetool -h $NODE $COMMAND; 
+      nodetool -h $NODE $COMMAND;
     else
       echo $NODE;
     fi

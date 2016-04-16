@@ -2,7 +2,7 @@
   "uploadOnSave": true,
   "useAtomicWrites": false,
   "deleteLocal": false,
-  "hostname": "mw-01.lv.ntent.com",
+  "hostname": "cassandradev-01.cb.ntent.com",
   "target": "scripts",
   "ignore": [
     ".remote-sync.json",

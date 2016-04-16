@@ -17,7 +17,7 @@ COMMAND="";
 while [[ $# > 0 ]]; do
 
   case "$1" in
-    -x) 
+    -x)
       TOIGNORE+=($2);
       shift 2;
       ;;
@@ -35,18 +35,18 @@ while [[ $# > 0 ]]; do
       VERBOSE=true;
       shift 1;
       ;;
-   
+
     --)
       shift;
       COMMAND="${COMMAND} $@";
       break;
       ;;
 
-    *) 
+    *)
       COMMAND="${COMMAND} $1";
       shift 1;
       ;;
-  esac 
+  esac
 done
 
 if [[ $COMMAND == "" ]]; then
@@ -67,9 +67,9 @@ unset IFS;
 
 for KEYSPACE in "${SORTED[@]}"; do
     if [[ ! " ${TOIGNORE[@]} " =~ " ${KEYSPACE} " ]]; then
-      [[ $VERBOSE ]] && echo "${CG}Keyspace $KEYSPACE: ${CS}"; 
-   
+      [[ $VERBOSE ]] && echo "${CG}Keyspace $KEYSPACE: ${CS}";
+
       [[ $DEBUG ]] && echo "Running command: ${COMMAND}.";
       eval "$COMMAND" || true;
-    fi 
+    fi
 done

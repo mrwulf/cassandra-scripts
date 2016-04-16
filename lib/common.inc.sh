@@ -22,17 +22,22 @@ function use_nodetool() {
   add_info "$OUTPUT";
 }
 
+function use_shell() {
+  OUTPUT=`ssh $NODE "$@"`;
+  add_info $OUTPUT;
+}
+
 NODES=();
 function get_nodes() {
   # Uses global NODES variable
   NODES=();
 
   # Get this node
-  NODES+=( $(cqlsh `hostname -a` -e 'SELECT rpc_address FROM system.local' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') );
+  NODES+=( $(cqlsh $NODE -e 'SELECT rpc_address FROM system.local' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') );
   add_debug "Running on: ${NODES[@]}";
 
   # Get the other nodes
-  for PEER in $(cqlsh `hostname -a` -e 'SELECT peer FROM system.peers' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'); do
+  for PEER in $(cqlsh $NODE -e 'SELECT peer FROM system.peers' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'); do
     add_debug "Found peer: ${PEER}";
     NODES+=( "$PEER" );
   done
@@ -46,9 +51,22 @@ function get_nodes() {
   unset SORTEDNODES;
 }
 
-function use_shell() {
-  OUTPUT=`ssh $NODE "$@"`;
-  add_info $OUTPUT;
+KEYSPACES=();
+function get_keyspaces() {
+  # Uses global KEYSPACES variable
+  KEYSPACES=();
+
+  for KEYSPACE in $(cqlsh $NODE -e "DESC KEYSPACES" | perl -pe 's/\e([^\[\]]|\[.*?[a-zA-Z]|\].*?\a)//g' | sed '/^$/d'); do
+    KEYSPACES+=( "$KEYSPACE" );
+  done
+
+  # Sort for sanity
+  IFS=$'\n';
+  SORTEDKEYSPACES=($(sort -V <<<"${KEYSPACES[*]}"));
+  unset IFS;
+
+  KEYSPACES=("${SORTEDKEYSPACES[@]}");
+  unset SORTEDKEYSPACES;
 }
 
 NODE=`hostname -a`;
@@ -103,6 +121,7 @@ function help() {
         restart         Restarts a node and waits until it's running again
         wait            Wait until a node is up and running
         listnodes       Show nodes in this cluster
+        listkeyspaces   Show keyspaces (exclude those listed after --)
         rollingrestart  Sequentially restart all of the nodes in this cluster
         nodetool        Run nodetool on all nodes (specify command after --)
         shell           Run a shell command on all nodes (specify command after --)
@@ -132,9 +151,9 @@ function function_exists() {
 function run_command() {
   [[ ! $COMMAND ]] && help;
 
-  function_exists "cassandra_$COMMAND" && cassandra_$COMMAND && return;
+  function_exists "cassandra_$COMMAND" && (cassandra_$COMMAND || true) && return;
 
-  function_exists "$COMMAND" && $COMMAND && return;
+  function_exists "$COMMAND" && ($COMMAND || true) && return;
 
   help "Unknown command requested: ${CG}${COMMAND}${CS}.";
 }

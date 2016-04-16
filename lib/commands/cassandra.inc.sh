@@ -60,3 +60,12 @@ function cassandra_shell() {
     use_shell "${PARAMS[@]}";
   done
 }
+
+function cassandra_listkeyspaces() {
+  get_keyspaces;
+  for KEYSPACE in "${KEYSPACES[@]}"; do
+    if [[ ! " ${PARAMS[@]} " =~ " ${KEYSPACE} " ]]; then
+      echo $KEYSPACE;
+    fi
+  done
+}

@@ -92,7 +92,7 @@ USAGE
 
 COMMAND="";
 function set_command() {
-  [[ $COMMAND ]] && help "Only one command may be run at a time. Already running ${CG}${COMMAND}{$CS} when ${CG}${$1}${CS} requested.";
+  [[ $COMMAND ]] && help "Only one command may be run at a time. Already running ${CG}${COMMAND}${CS} when ${CG}${1}${CS} requested.";
 
   COMMAND="${1,,}";
 }

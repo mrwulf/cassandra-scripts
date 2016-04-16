@@ -13,10 +13,6 @@ function add_info_inline() {
   [[ $VERBOSE ]] && [[ $1 ]] && echo -n -e "$1";
 }
 
-function add_debug() {
-  [[ $DEBUG ]] && [[ $1 ]] && echo "$1";
-}
-
 function use_nodetool() {
   OUTPUT=`nodetool -h $NODE $1`;
   add_info "$OUTPUT";
@@ -25,48 +21,6 @@ function use_nodetool() {
 function use_shell() {
   OUTPUT=`ssh $NODE "$@"`;
   add_info $OUTPUT;
-}
-
-NODES=();
-function get_nodes() {
-  # Uses global NODES variable
-  NODES=();
-
-  # Get this node
-  NODES+=( $(cqlsh $NODE -e 'SELECT rpc_address FROM system.local' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') );
-  add_debug "Running on: ${NODES[@]}";
-
-  # Get the other nodes
-  for PEER in $(cqlsh $NODE -e 'SELECT peer FROM system.peers' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'); do
-    add_debug "Found peer: ${PEER}";
-    NODES+=( "$PEER" );
-  done
-
-  # Sort to make it cleaner
-  IFS=$'\n';
-  SORTEDNODES=($(sort -V <<<"${NODES[*]}"));
-  unset IFS;
-
-  NODES=("${SORTEDNODES[@]}");
-  unset SORTEDNODES;
-}
-
-KEYSPACES=();
-function get_keyspaces() {
-  # Uses global KEYSPACES variable
-  KEYSPACES=();
-
-  for KEYSPACE in $(cqlsh $NODE -e "DESC KEYSPACES" | perl -pe 's/\e([^\[\]]|\[.*?[a-zA-Z]|\].*?\a)//g' | sed '/^$/d'); do
-    KEYSPACES+=( "$KEYSPACE" );
-  done
-
-  # Sort for sanity
-  IFS=$'\n';
-  SORTEDKEYSPACES=($(sort -V <<<"${KEYSPACES[*]}"));
-  unset IFS;
-
-  KEYSPACES=("${SORTEDKEYSPACES[@]}");
-  unset SORTEDKEYSPACES;
 }
 
 NODE=`hostname -a`;

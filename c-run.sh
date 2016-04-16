@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+function add_debug() {
+  [[ $DEBUG ]] && [[ $1 ]] && echo "$1";
+}
 
 # Include
 include () {
@@ -12,7 +15,8 @@ include () {
     if [[ ! -d "$SOURCE_DIR" ]]; then SOURCE_DIR="$PWD"; fi
   fi
 
-  for f in "${SOURCE_DIR}/lib/${1}.inc.sh"; do
+  for f in ${SOURCE_DIR}/lib/${1}.inc.sh; do
+    add_debug "Including ${f}...";
     . $f;
   done
   #. "${SOURCE_DIR}/lib/${1}.inc.sh"

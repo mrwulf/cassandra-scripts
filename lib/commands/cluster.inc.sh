@@ -1,26 +1,25 @@
-function cassandra_restart() {
-  cassandra_stop;
-  cassandra_start;
-  cassandra_wait;
-}
+NODES=();
+function get_nodes() {
+  # Uses global NODES variable
+  NODES=();
 
-function cassandra_start() {
-  use_shell sudo service cassandra start;
-}
+  # Get this node
+  NODES+=( $(cqlsh $NODE -e 'SELECT rpc_address FROM system.local' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') );
+  add_debug "Running on: ${NODES[@]}";
 
-function cassandra_stop() {
-  use_nodetool flush;
-  use_nodetool drain;
-  use_shell sudo service cassandra stop;
-}
-
-function cassandra_wait() {
-  [[ $VERBOSE ]] && echo -n "Waiting for node to start...";
-  until STAT=`nodetool -h $NODE statusbinary 2>&1` && [ "$STAT"  == "running" ]; do
-    [[ $VERBOSE ]] && echo -n ".";
-    sleep 1;
+  # Get the other nodes
+  for PEER in $(cqlsh $NODE -e 'SELECT peer FROM system.peers' | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'); do
+    add_debug "Found peer: ${PEER}";
+    NODES+=( "$PEER" );
   done
-  [[ $VERBOSE ]] && echo "";
+
+  # Sort to make it cleaner
+  IFS=$'\n';
+  SORTEDNODES=($(sort -V <<<"${NODES[*]}"));
+  unset IFS;
+
+  NODES=("${SORTEDNODES[@]}");
+  unset SORTEDNODES;
 }
 
 function cassandra_listnodes() {
@@ -58,14 +57,5 @@ function cassandra_shell() {
     add_info "${CG}Node: ${NODE} ${CS}";
     add_debug "Running command: ${PARAMS[@]}";
     use_shell "${PARAMS[@]}";
-  done
-}
-
-function cassandra_listkeyspaces() {
-  get_keyspaces;
-  for KEYSPACE in "${KEYSPACES[@]}"; do
-    if [[ ! " ${PARAMS[@]} " =~ " ${KEYSPACE} " ]]; then
-      echo $KEYSPACE;
-    fi
   done
 }

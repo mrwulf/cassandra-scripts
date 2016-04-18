@@ -30,16 +30,20 @@ function add_info() {
 }
 
 function use_nodetool() {
-  command="nodetool -h $NODE $@";
-  add_debug "Running nodetool: ${command}";
-  OUTPUT=`$command`;
-  add_info "$OUTPUT";
+  use_command 'nodetool -h' "$@";
 }
 
 function use_shell() {
-  command="ssh $NODE $@";
+  use_command 'ssh' "$@";
+}
+
+function use_command() {
+  command="$1";
+  shift;
+  command="${command} ${NODE} ${@}";
   add_debug "Running command: ${command}";
   OUTPUT=`$command`;
+  add_info "$OUTPUT";
 }
 
 NODE=`hostname -a`;
@@ -87,11 +91,11 @@ function help() {
     Usage: $PROG
            <command>         Command to run
            -l|--no-label     Supress output being labelled with node
-           -n|--node         Node to execute on (default: $NODE)
-           --help            This screen
+           -n|--node         Node to connect to (default: $NODE)
            -v|--verbose      Add verbosity
            -d|--debug        Show debug info
-           --                Everything else will be passed to the command
+           --help            This screen
+           --                Everything after this will be passed to the command
 
     Commands:
         start           Start a node
@@ -106,9 +110,9 @@ function help() {
 
     Examples:
         $PROG rollingrestart
-        $PROG listnodes | xargs -I {} ssh {} uptime
+        $PROG listnodes | xargs -I {} ssh {} nodetool compactionstats -H
         $PROG nodetool -v -- compactionstats -H
-        $PROG shell -v -- hostname -a
+        $PROG shell -v -- nodetool compactionstats -H
 USAGE
 
   exit 1;

@@ -39,22 +39,19 @@ function cassandra_rollingrestart() {
 }
 
 function cassandra_nodetool() {
-  [[ ! $PARAMS ]] && help "You must supply a command for nodetool to run";
-
-  get_nodes;
-  for NODE in "${NODES[@]}"; do
-    add_info "${CG}Node: ${NODE} ${CS}" 'noprefix';
-    use_nodetool "${PARAMS[@]}";
-  done
+  _cassandra_command 'nodetool';
 }
 
 function cassandra_shell() {
+  _cassandra_command 'shell';
+}
+
+function _cassandra_command() {
   [[ ! $PARAMS ]] && help "You must supply a command to run";
 
   get_nodes;
   for NODE in "${NODES[@]}"; do
     add_info "${CG}Node: ${NODE} ${CS}" 'noprefix';
-    add_debug "Running command: ${PARAMS[@]}";
-    use_shell "${PARAMS[@]}";
+    use_$1 "${PARAMS[@]}";
   done
 }

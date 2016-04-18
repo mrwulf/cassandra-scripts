@@ -33,19 +33,19 @@ function cassandra_stop() {
 }
 
 function cassandra_wait() {
-  [[ $VERBOSE ]] && echo -n "Waiting for node to start...";
+  add_info "Waiting for node to start..." 'inline';
   until STAT=`nodetool -h $NODE statusbinary 2>&1` && [ "$STAT"  == "running" ]; do
-    [[ $VERBOSE ]] && echo -n ".";
+    add_info "." 'noprefix|inline';
     sleep 1;
   done
-  [[ $VERBOSE ]] && echo "";
+  add_info "." 'noprefix';
 }
 
 function cassandra_listkeyspaces() {
   get_keyspaces;
   for KEYSPACE in "${KEYSPACES[@]}"; do
     if [[ ! " ${PARAMS[@]} " =~ " ${KEYSPACE} " ]]; then
-      echo $KEYSPACE;
+      add_info "$KEYSPACE" 'noprefix|force';
     fi
   done
 }

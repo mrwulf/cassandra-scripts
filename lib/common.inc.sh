@@ -1,32 +1,55 @@
 # Colors
-CR=`echo -ne '\033[31m'`
-CG=`echo -ne '\033[32m'`
-CY=`echo -ne '\033[33m'`
-BO=`echo -ne '\033[1m'`
-CS=`echo -ne '\033[0m'`
+CR='\033[31m'; # Red
+CG='\033[32m'; # Green
+CY='\033[33m'; # Yellow
+BO='\033[1m';  # Bold
+CS='\033[0m';  # Clear Formatting
 
+# Function:   add_info
+# Parameters: $1   -> Text to print
+#             ($2) -> Optional: force    - always print (overrides VERBOSE)
+#                               noprefix - don't prefix node (same as NOLABEL)
+#                               inline   - remove newlines
 function add_info() {
-  [[ $VERBOSE ]] && [[ $1 ]] && echo "$1";
-}
+  if [[ $1 ]] && ( [[ $VERBOSE ]] || [[ "$2" =~ force ]] ); then
+    prefix="${NODE}:\t";
+    if [[ "$2" =~ noprefix ]] || [[ $NOLABEL ]]; then
+      prefix='';
+    fi
 
-function add_info_inline() {
-  [[ $VERBOSE ]] && [[ $1 ]] && echo -n -e "$1";
+    IFS=$'\n';
+    for line in $1; do
+      if [[ "$2" =~ inline ]]; then
+        echo -n -e "${prefix}${line}";
+      else
+        echo -e "${prefix}${line}";
+      fi
+    done
+    unset IFS;
+  fi
 }
 
 function use_nodetool() {
-  OUTPUT=`nodetool -h $NODE $1`;
+  command="nodetool -h $NODE $@";
+  add_debug "Running nodetool: ${command}";
+  OUTPUT=`$command`;
   add_info "$OUTPUT";
 }
 
 function use_shell() {
-  OUTPUT=`ssh $NODE "$@"`;
-  add_info $OUTPUT;
+  command="ssh $NODE $@";
+  add_debug "Running command: ${command}";
+  OUTPUT=`$command`;
 }
 
 NODE=`hostname -a`;
 function parse_arguments() {
   while [[ $# > 0 ]]; do
     case "${1,,}" in
+    -l|--no-label)
+      NOLABEL=true;
+      shift;
+      ;;
     -n|--node)
       NODE=$2;
       shift 2;
@@ -63,6 +86,7 @@ function help() {
   cat <<USAGE
     Usage: $PROG
            <command>         Command to run
+           -l|--no-label     Supress output being labelled with node
            -n|--node         Node to execute on (default: $NODE)
            --help            This screen
            -v|--verbose      Add verbosity

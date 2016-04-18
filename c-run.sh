@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+#set -x;
+
 function add_debug() {
-  [[ $DEBUG ]] && [[ $1 ]] && echo "$1";
+  [[ $DEBUG ]] && [[ $1 ]] && echo "DEBUG>>${1}";
 }
 
 # Include

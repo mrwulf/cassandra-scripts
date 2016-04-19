@@ -34,11 +34,52 @@ function cassandra_stop() {
 
 function cassandra_wait() {
   add_info "Waiting for node to start..." 'inline';
-  until STAT=`nodetool -h $NODE statusbinary 2>&1` && [ "$STAT"  == "running" ]; do
+  until cassandra_checkstatus; do
     add_info "." 'noprefix|inline';
     sleep 1;
   done
   add_info "." 'noprefix';
+}
+
+function cassandra_checkstatus() {
+  if stat=`nodetool -h $NODE statusbinary 2>&1` && [[ "$stat" == "running" ]]; then
+    add_debug "${NODE} is running.";
+    return 0;
+  fi
+
+  add_debug "${NODE} is not running. Status=${stat}."
+  return 1;
+}
+
+function cassandra_safestop() {
+  get_nodes;
+  target="$NODE";
+  add_debug "Trying to safely stop ${target}.";
+
+  use_nodetool flush;
+  use_nodetool disablebinary;
+
+  other_node_down=false;
+  for NODE in "${NODES[@]}"; do
+    if [[ "$NODE" != "$target" ]]; then
+      if ! cassandra_checkstatus; then
+        # Other node is down, re-enable this node
+        add_debug "Other node (${NODE}) is down, so we can't stop now.";
+        NODE="$target";
+        use_nodetool enablebinary;
+        other_node_down=true;
+        break;
+      fi
+    fi
+  done
+
+  NODE="$target";
+
+  if [[ "$other_node_down" == false ]]; then
+    add_debug "No other nodes are down, so we can fully stop now.";
+    use_nodetool drain;
+    use_shell sudo service cassandra stop;
+  fi
 }
 
 function cassandra_listkeyspaces() {

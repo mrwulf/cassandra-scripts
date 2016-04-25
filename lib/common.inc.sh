@@ -67,6 +67,10 @@ function parse_arguments() {
       VERBOSE=true;
       shift;
       ;;
+    -s|--silent)
+      VERBOSE=false;
+      shift;
+      ;;
     -d|--debug)
       DEBUG=true;
       shift;
@@ -93,6 +97,7 @@ function help() {
            -l|--no-label     Supress output being labelled with node
            -n|--node         Node to connect to (default: $NODE)
            -v|--verbose      Add verbosity
+           -s|--silent       Less verbose
            -d|--debug        Show debug info
            --help            This screen
            --                Everything after this will be passed to the command

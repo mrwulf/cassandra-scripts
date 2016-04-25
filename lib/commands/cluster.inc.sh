@@ -51,15 +51,17 @@ function cassandra_allstatus() {
 }
 
 function cassandra_nodetool() {
+  VERBOSE=true;
   _cassandra_command 'nodetool';
 }
 
 function cassandra_shell() {
+  VERBOSE=true;
   _cassandra_command 'shell';
 }
 
 function _cassandra_command() {
-  [[ ! $PARAMS ]] && help "You must supply a command to run";
+  [[ ! $PARAMS ]] && help "You must supply a command to run!";
 
   get_nodes;
   for NODE in "${NODES[@]}"; do

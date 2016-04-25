@@ -57,6 +57,7 @@ function cassandra_safestop() {
   add_debug "Trying to safely stop ${target}.";
 
   use_nodetool flush;
+
   use_nodetool disablebinary;
 
   other_node_down=false;

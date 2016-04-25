@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#set -x;
 
 function add_debug() {
   [[ $DEBUG ]] && [[ $1 ]] && echo "DEBUG>>${1}";

@@ -27,15 +27,37 @@ function cassandra_listnodes() {
   get_nodes;
   for NODE in "${NODES[@]}"; do
     dnsname=`dig -x $NODE +short`;
-    add_info "${NODE}\t --> ${dnsname%.}" 'noprefix|force';
+    add_info "${dnsname%.}" 'force'; # The %. at the end trims the trailing dot
   done
 }
 
-function cassandra_rollingrestart() {
+function cassandra_allrestart() {
   get_nodes;
   for NODE in "${NODES[@]}"; do
     add_info "${CG}Restarting Node: ${NODE} ${CS}" 'noprefix';
     cassandra_restart;
+  done
+}
+
+function cassandra_allpuppetdeploy() {
+  get_nodes;
+  for NODE in "${NODES[@]}"; do
+    add_info "${CG}Running on node: ${NODE} ${CS}" 'noprefix';
+    use_nodetool flush;
+    use_shell sudo puppet agent --enable;
+    use_shell sudo puppet agent --test;
+    cassandra_wait;
+  done
+}
+
+function cassandra_allpuppetdisable() {
+  [[ ! $PARAMS ]] && help "You must supply a disable message!";
+
+  get_nodes;
+  for NODE in "${NODES[@]}"; do
+    add_info "${CG}Running on node: ${NODE} ${CS}" 'noprefix';
+    use_shell sudo puppet agent --disable "'${PARAMS[@]}'";
+    use_shell sudo killall puppet;
   done
 }
 

@@ -25,6 +25,8 @@ include () {
 include 'common';
 include 'commands/*';
 
+set -f
+
 parse_arguments "$@";
 run_command;
 

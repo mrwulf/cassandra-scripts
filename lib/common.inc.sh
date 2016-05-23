@@ -34,7 +34,7 @@ function use_nodetool() {
 }
 
 function use_shell() {
-  use_command 'ssh' "$@";
+  use_command 'ssh' "${@}";
 }
 
 function use_command() {
@@ -43,35 +43,42 @@ function use_command() {
   command="${command} ${NODE} ${@}";
   add_debug "Running command: ${command}";
   OUTPUT=`$command`;
-  add_info "$OUTPUT";
+  add_info "${OUTPUT}";
 }
 
 NODE=`hostname -a`;
 function parse_arguments() {
   while [[ $# > 0 ]]; do
+    add_debug "Found argument: ${1}";
     case "${1,,}" in
     -l|--no-label)
+      add_debug "Turning off labels.";
       NOLABEL=true;
       shift;
       ;;
     -n|--node)
+      add_debug "Will connect to node ${2}.";
       NODE=$2;
       shift 2;
       ;;
     --)
       shift;
+      add_debug "The rest will be piped on as... $*";
       PARAMS=("$@");
       break;
       ;;
     -v|--verbose)
+      add_debug "Turning on verbose.";
       VERBOSE=true;
       shift;
       ;;
     -s|--silent)
+      add_debug "Turning off verbose.";
       VERBOSE=false;
       shift;
       ;;
     -d|--debug)
+      add_debug "Turning on debug.";
       DEBUG=true;
       shift;
       ;;
@@ -79,6 +86,7 @@ function parse_arguments() {
       help;
       ;;
     *)
+      add_debug "Setting command to run: ${1}";
       set_command $1;
       shift;
       ;;
@@ -100,24 +108,30 @@ function help() {
            -s|--silent       Less verbose
            -d|--debug        Show debug info
            --help            This screen
-           --                Everything after this will be passed to the command
+           --                Everything after this will be passed to the command (with one level of quotes removed)
 
     Commands:
-        start           Start a node
-        stop            Stop a node cleanly
-        restart         Restarts a node and waits until it's running again
-        wait            Wait until a node is up and running
-        listnodes       Show nodes in this cluster
-        listkeyspaces   Show keyspaces (exclude those listed after --)
-        rollingrestart  Sequentially restart all of the nodes in this cluster
-        nodetool        Run nodetool on all nodes (specify command after --)
-        shell           Run a shell command on all nodes (specify command after --)
+      List:
+        allstatus         Show the status of all nodes
+        listnodes         Show nodes in this cluster
+        listkeyspaces     Show keyspaces (exclude those listed after --)
+      One Node:
+        start             Start a node
+        stop              Stop a node cleanly
+        restart           Restarts a node and waits until it's running again
+        wait              Wait until a node is up and running
+      All Nodes:
+        allrestart        Sequentially restart all of the nodes in this cluster
+        allpuppetdeploy   Sequentially enable and run the puppet agent
+        allpuppetdisable  Disable puppet agent on all nodes (specify message after --)
+        nodetool          Run nodetool on all nodes (specify command after --)
+        shell             Run a shell command on all nodes (specify command after --)
 
     Examples:
         $PROG rollingrestart
         $PROG listnodes | xargs -I {} ssh {} nodetool compactionstats -H
-        $PROG nodetool -v -- compactionstats -H
-        $PROG shell -v -- nodetool compactionstats -H
+        $PROG nodetool -- compactionstats -H
+        $PROG shell -- nodetool compactionstats -H
 USAGE
 
   exit 1;

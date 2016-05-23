@@ -33,7 +33,7 @@ function cassandra_stop() {
 }
 
 function cassandra_wait() {
-  add_info "Waiting for node to start..." 'inline';
+  add_info "Waiting for node to be active..." 'inline';
   until cassandra_checkstatus; do
     add_info "." 'noprefix|inline';
     sleep 1;
